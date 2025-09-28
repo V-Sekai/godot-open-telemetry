@@ -30,13 +30,23 @@ jobs:
       run: |
         brew install cmake protobuf grpc
 
-    - name: Build OpenTelemetry C++
+    - name: Build OpenTelemetry C++ (Ubuntu)
+      if: runner.os == 'Linux'
       run: |
         cd thirdparty/opentelemetry-cpp
         mkdir build
         cd build
         cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DWITH_OTLP=ON -DWITH_OTLP_GRPC=ON -DCMAKE_BUILD_TYPE=Release
-        cmake --build . --config Release
+        cmake --build . --config Release -- -j$(nproc)
+
+    - name: Build OpenTelemetry C++ (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        cd thirdparty/opentelemetry-cpp
+        mkdir build
+        cd build
+        cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DWITH_OTLP=ON -DWITH_OTLP_GRPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=arm64
+        cmake --build . --config Release -- -j$(sysctl -n hw.logicalcpu)
 
     - name: Verify libraries
       run: |
