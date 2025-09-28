@@ -27,6 +27,9 @@ project(
   VERSION "${OPENTELEMETRY_VERSION_NUMBER}"
   LANGUAGES CXX)
 
+# Force fetching gRPC to avoid broken system installations
+set(CMAKE_DISABLE_FIND_PACKAGE_gRPC ON)
+
 # Mark variables as used so cmake doesn't complain about them
 mark_as_advanced(CMAKE_TOOLCHAIN_FILE)
 
