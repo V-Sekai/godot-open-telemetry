@@ -10,6 +10,13 @@
 # https://github.com/grpc/grpc/pull/33361 for more details.
 include(CMakeFindDependencyMacro)
 
+# Fix for ARM64 builds - disable AES hardware acceleration which uses SSE4.1
+# This prevents build failures on Apple Silicon and ARM64 platforms
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+    message(STATUS "ARM64 detected, disabling AES hardware acceleration for grpc")
+    set(ABSL_RANDOM_DISABLE_AES_HARDWARE_ACCELERATION ON CACHE BOOL "" FORCE)
+endif()
+
 find_package(gRPC CONFIG QUIET)
 set(gRPC_PROVIDER "find_package")
 
