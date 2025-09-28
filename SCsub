@@ -35,25 +35,31 @@ if not os.path.exists(os.path.join(build_dir, f"libopentelemetry_api{suffix}")):
 
 # Link the libraries
 libs_to_link = [
-    "opentelemetry_api",
-    "opentelemetry_sdk",
-    "opentelemetry_exporter_otlp_grpc",
-    "opentelemetry_proto",
-    "opentelemetry_resources",
-    "opentelemetry_common",
-    "opentelemetry_version",
+    os.path.join(build_dir, "sdk/src/common/libopentelemetry_common.a"),
+    os.path.join(build_dir, "sdk/src/resource/libopentelemetry_resources.a"),
+    os.path.join(build_dir, "sdk/src/trace/libopentelemetry_trace.a"),
+    os.path.join(build_dir, "sdk/src/metrics/libopentelemetry_metrics.a"),
+    os.path.join(build_dir, "sdk/src/logs/libopentelemetry_logs.a"),
+    os.path.join(build_dir, "sdk/src/version/libopentelemetry_version.a"),
+    os.path.join(build_dir, "exporters/otlp/libopentelemetry_otlp_recordable.a"),
+    os.path.join(build_dir, "exporters/otlp/libopentelemetry_exporter_otlp_grpc_client.a"),
+    os.path.join(build_dir, "exporters/otlp/libopentelemetry_exporter_otlp_grpc.a"),
+    os.path.join(build_dir, "exporters/otlp/libopentelemetry_exporter_otlp_grpc_log.a"),
+    os.path.join(build_dir, "exporters/otlp/libopentelemetry_exporter_otlp_grpc_metrics.a"),
+    os.path.join(build_dir, "libopentelemetry_proto.a"),
+    os.path.join(build_dir, "libopentelemetry_proto_grpc.a"),
 ]
 
 for lib in libs_to_link:
-    lib_path = os.path.join(build_dir, f"lib{lib}{suffix}")
-    if os.path.exists(lib_path):
-        env.Append(LIBS=[env.File(lib_path)])
+    if os.path.exists(lib):
+        env.Append(LIBS=[env.File(lib)])
 
 # Add include paths
 env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "api/include")])
 env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "sdk/include")])
 env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "exporters/otlp/include")])
 env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "third_party/nlohmann-json/include")])
+env.Append(CPPPATH=[os.path.join(build_dir, "generated/third_party/opentelemetry-proto")])
 
 if env["platform"] == "macos" or env["platform"] == "linuxbsd":
     env.Append(LIBS=["resolv"])
