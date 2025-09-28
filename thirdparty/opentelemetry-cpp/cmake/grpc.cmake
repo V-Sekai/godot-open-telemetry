@@ -45,6 +45,9 @@ if(NOT gRPC_FOUND)
   set(gRPC_ABSL_PROVIDER "module" CACHE STRING "" FORCE)
   set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
 
+  # Allow gRPC and its submodules to work with older CMake versions
+  set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
   FetchContent_MakeAvailable(grpc)
 
   # Set the gRPC_VERSION variable from the git tag.
