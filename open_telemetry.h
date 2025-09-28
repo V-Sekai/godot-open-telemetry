@@ -31,12 +31,20 @@
 #ifndef OPEN_TELEMETRY_H
 #define OPEN_TELEMETRY_H
 
-#include "core/io/json.h"
-#include "core/object/ref_counted.h"
-#include "core/variant/dictionary.h"
 #include <godot_cpp/classes/crypto.hpp>
+#include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/method_bind.hpp>
+#include <godot_cpp/templates/cowdata.hpp>
+#include <godot_cpp/templates/vector.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
+#include <godot_cpp/variant/string.hpp>
 
 #include "opentelemetry_wrapper.h"
+
+namespace godot {
 
 class OpenTelemetry : public RefCounted {
 	GDCLASS(OpenTelemetry, RefCounted);
@@ -54,6 +62,12 @@ public:
 	void record_error(String p_span_uuid, String p_error);
 	void end_span(String p_span_uuid);
 	String shutdown();
+
+private:
+	String start_span_with_id(String p_name, String p_span_id);
+	String start_span_with_parent_id(String p_name, String p_parent_span_uuid, String p_span_id);
 };
+
+}
 
 #endif // OPEN_TELEMETRY_H

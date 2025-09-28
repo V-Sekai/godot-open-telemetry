@@ -3,17 +3,23 @@
 # Default target
 default: build
 
-# Build Godot with the OpenTelemetry module enabled
-build:
-    cd {{env_var('GODOT_PATH')}} && scons platform=linuxbsd target=editor -j$(nproc) module_opentelemetry_enabled=yes
+# Build godot-cpp bindings
+build-cpp:
+    cd {{env_var('GODOT_CPP_PATH')}} && scons platform=linuxbsd generate_bindings=yes
 
-# Run the built Godot editor
+# Build the OpenTelemetry GDExtension
+build:
+    mkdir -p build
+    cmake -S . -B build -G Ninja -DPLATFORM=linuxbsd -DTARGET=editor -DARCH=x86_64 -DCMAKE_BUILD_TYPE=Release
+    cmake --build build --config Release
+
+# Run the Godot editor (assumes GODOT_BINARY is set and the extension is loaded in a project)
 run:
     {{env_var('GODOT_BINARY')}}
 
-# Clean the Godot build
+# Clean the build directory
 clean:
-    cd {{env_var('GODOT_PATH')}} && scons -c
+    rm -rf build
 
 # Rebuild: clean and build
 rebuild: clean build
@@ -26,9 +32,5 @@ build-opentelemetry:
     cmake .. -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DWITH_OTLP=ON -DWITH_OTLP_GRPC=ON -DCMAKE_BUILD_TYPE=Release && \
     cmake --build . --config Release
 
-# Sync the module to Godot modules directory
-sync-module:
-    rsync -av --exclude='.git' --exclude='thirdparty/opentelemetry-cpp/build' . {{env_var('GODOT_PATH')}}/modules/opentelemetry/
-
-# Full setup: sync module, build opentelemetry, build godot
-setup: sync-module build-opentelemetry build
+# Full setup: build cpp, build opentelemetry, build extension
+setup: build-cpp build-opentelemetry build

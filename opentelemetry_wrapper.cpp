@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <system_error>
 
 // Managed spans
 static std::map<std::string, opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span>> spans;
@@ -38,44 +39,40 @@ opentelemetry::sdk::common::AttributeMap parse_attributes(const std::string& jso
             }
             // Add more types if needed
         }
-    } catch (...) {
-        // Ignore parse errors
+    } catch (const nlohmann::json::parse_error&) {
+        // Ignore parse errors - return empty attributes
     }
     return attributes;
 }
 
 char* InitTracerProvider(const char* name, const char* host, const char* json_attributes) {
-    try {
-        // Parse attributes
-        auto resource_attributes = parse_attributes(json_attributes);
+    // Parse attributes
+    auto resource_attributes = parse_attributes(json_attributes);
 
-        // Create resource
-        auto resource = opentelemetry::sdk::resource::Resource::Create(resource_attributes);
+    // Create resource
+    auto resource = opentelemetry::sdk::resource::Resource::Create(resource_attributes);
 
-        // Create OTLP exporter
-        opentelemetry::exporter::otlp::OtlpGrpcExporterOptions opts;
-        opts.endpoint = host;
-        auto exporter = std::make_unique<opentelemetry::exporter::otlp::OtlpGrpcExporter>(opts);
+    // Create OTLP exporter
+    opentelemetry::exporter::otlp::OtlpGrpcExporterOptions opts;
+    opts.endpoint = host;
+    auto exporter = std::make_unique<opentelemetry::exporter::otlp::OtlpGrpcExporter>(opts);
 
-        // Create processor
-        auto processor = std::make_unique<opentelemetry::sdk::trace::SimpleSpanProcessor>(std::move(exporter));
+    // Create processor
+    auto processor = std::make_unique<opentelemetry::sdk::trace::SimpleSpanProcessor>(std::move(exporter));
 
-        // Create provider
-        auto sdk_provider = opentelemetry::nostd::shared_ptr<opentelemetry::sdk::trace::TracerProvider>(
-            new opentelemetry::sdk::trace::TracerProvider(std::move(processor), resource)
-        );
-        tracer_provider = std::move(sdk_provider);
+    // Create provider
+    auto sdk_provider = opentelemetry::nostd::shared_ptr<opentelemetry::sdk::trace::TracerProvider>(
+        new opentelemetry::sdk::trace::TracerProvider(std::move(processor), resource)
+    );
+    tracer_provider = std::move(sdk_provider);
 
-        // Set global provider
-        opentelemetry::trace::Provider::SetTracerProvider(tracer_provider);
+    // Set global provider
+    opentelemetry::trace::Provider::SetTracerProvider(tracer_provider);
 
-        // Get tracer
-        tracer = tracer_provider->GetTracer(name);
+    // Get tracer
+    tracer = tracer_provider->GetTracer(name);
 
-        return strdup("OK");
-    } catch (const std::exception& e) {
-        return strdup(e.what());
-    }
+    return strdup("OK");
 }
 
 char* StartSpanWithId(const char* name, const char* span_id) {
@@ -111,7 +108,7 @@ void AddEvent(const char* span_uuid, const char* event_name) {
 
 void SetAttributes(const char* span_uuid, const char* json_attributes) {
     auto it = spans.find(span_uuid);
-    if (it != spans.end()) {
+    if (it != spans.end() && json_attributes) {
         try {
             nlohmann::json j = nlohmann::json::parse(json_attributes);
             for (auto& [key, value] : j.items()) {
@@ -125,7 +122,7 @@ void SetAttributes(const char* span_uuid, const char* json_attributes) {
                     it->second->SetAttribute(key, value.get<bool>());
                 }
             }
-        } catch (...) {
+        } catch (const nlohmann::json::parse_error&) {
             // Ignore parse errors
         }
     }

@@ -1,0 +1,22 @@
+[configuration]
+
+entry_symbol = "opentelemetry_library_init"
+compatibility_minimum = "4.2"
+license = "MIT"
+version = "0.1"
+description = "OpenTelemetry extension for Godot"
+documentation_url = ""
+author = "V-Sekai"
+dependencies = []
+language = "C++"
+icon = ""
+docs = {}
+io = {}
+reloadable = true
+
+[libraries]
+
+linux.debug.x86_64 = "res://bin/opentelemetry.linux.x86_64.so"
+linux.release.x86_64 = "res://bin/opentelemetry.linux.x86_64.so"
+macos.debug.arm64 = "res://bin/opentelemetry.macos.arm64.dylib"
+macos.release.arm64 = "res://bin/opentelemetry.macos.arm64.dylib"

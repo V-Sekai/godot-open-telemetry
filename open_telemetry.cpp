@@ -30,6 +30,12 @@
 
 #include "open_telemetry.h"
 
+#include <godot_cpp/variant/char_string.hpp>
+#include <godot_cpp/classes/crypto.hpp>
+#include <godot_cpp/classes/json.hpp>
+
+using namespace godot;
+
 void OpenTelemetry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_tracer_provider", "name", "host", "attributes"), &OpenTelemetry::init_tracer_provider);
 	ClassDB::bind_method(D_METHOD("start_span", "name"), &OpenTelemetry::start_span);
@@ -64,7 +70,8 @@ String OpenTelemetry::start_span_with_parent(String p_name, String p_parent_span
 }
 
 String OpenTelemetry::generate_uuid_v7() {
-	Ref<Crypto> crypto = memnew(Crypto);
+	Ref<Crypto> crypto;
+	crypto.instantiate();
 	PackedByteArray random_bytes = crypto->generate_random_bytes(8); // Generate 64 random bits
 
 	// Combine random bytes into uint64_t
@@ -90,8 +97,8 @@ String OpenTelemetry::generate_uuid_v7() {
 
 	// Format as 36-character UUID string
 	char buffer[37];
-	snprintf(buffer, sizeof(buffer), "%08x-%04x-%04x-%04x-%012llx",
-			 time_high, time_mid, time_low_ver, clock_seq, node);
+	snprintf(buffer, sizeof(buffer), "%08x-%04x-%04x-%04x-%012lx",
+			 time_high, time_mid, time_low_ver, clock_seq, (unsigned long)node);
 
 	return String(buffer);
 }
@@ -121,7 +128,7 @@ void OpenTelemetry::add_event(String p_span_uuid, String p_event_name) {
 	char *cstr_event_id = c_event_id.ptrw();
 	CharString c_event_name = p_event_name.utf8();
 	char *cstr_event_name = c_event_name.ptrw();
-	AddEvent(cstr_event_id, cstr_event_name);
+	AddEvent(cstr_event_id, c_event_name);
 }
 
 void OpenTelemetry::set_attributes(String p_span_uuid, Dictionary p_attributes) {
@@ -138,7 +145,7 @@ void OpenTelemetry::record_error(String p_span_uuid, String p_error) {
 	char *cstr_error_id = c_error_id.ptrw();
 	CharString c_error = p_error.utf8();
 	char *cstr_error = c_error.ptrw();
-	RecordError(cstr_error_id, cstr_error);
+	RecordError(cstr_error_id, c_error);
 }
 
 void OpenTelemetry::end_span(String p_span_uuid) {

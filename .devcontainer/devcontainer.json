@@ -28,7 +28,6 @@
         "source=${localWorkspaceFolder}/.git,target=/workspaces/${localWorkspaceFolderBasename}/.git,type=bind,consistency=cached"
     ],
     "remoteEnv": {
-        "GODOT_PATH": "/home/vscode/godot",
-        "GODOT_BINARY": "/home/vscode/godot/bin/godot.linuxbsd.editor.x86_64"
+        "GODOT_CPP_PATH": "/home/vscode/godot-cpp"
     }
 }

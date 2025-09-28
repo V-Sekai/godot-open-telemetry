@@ -17,29 +17,19 @@ fi
 
 cd /workspaces/${localWorkspaceFolderBasename}
 
-# Set up module in Godot
-echo "Setting up module in Godot..."
-GODOT_MODULES_DIR="/home/vscode/godot/modules"
-MODULE_NAME="opentelemetry"
+# Build godot-cpp
+echo "Building godot-cpp..."
+cd /home/vscode/godot-cpp
 
-if [ ! -d "$GODOT_MODULES_DIR/$MODULE_NAME" ]; then
-    cp -r . "$GODOT_MODULES_DIR/$MODULE_NAME"
-    echo "Module copied to Godot"
+if [ ! -d "bin" ]; then
+    scons platform=linux generate_bindings=yes
 else
-    echo "Module already exists in Godot, updating..."
-    rsync -av --exclude='.git' --exclude='thirdparty/opentelemetry-cpp/build' . "$GODOT_MODULES_DIR/$MODULE_NAME/"
+    echo "godot-cpp already built, skipping build"
 fi
 
-# Build Godot with the module
-echo "Building Godot with OpenTelemetry module..."
-cd /home/vscode/godot
-
-if [ ! -f "bin/godot.linuxbsd.editor.x86_64" ]; then
-    scons platform=linuxbsd target=editor -j$(nproc) module_opentelemetry_enabled=yes
-else
-    echo "Godot already built, skipping build"
-fi
+cd /workspaces/${localWorkspaceFolderBasename}
 
 echo "Development environment setup complete!"
 echo "Godot binary: /home/vscode/godot/bin/godot.linuxbsd.editor.x86_64"
+echo "godot-cpp library: /home/vscode/godot-cpp/bin/libgodot-cpp.linuxbsd.template_release.x86_64.a"
 echo "You can now build and test the OpenTelemetry module"
