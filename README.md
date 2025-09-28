@@ -162,12 +162,80 @@ Environment variables available:
 - `GODOT_PATH`: Path to Godot source (`/home/vscode/godot`)
 - `GODOT_BINARY`: Path to built Godot binary
 
-### Building
+### Building with CMake
 
-To build Godot with this module:
+This module uses CMake for building the GDExtension library independently. The build process compiles the OpenTelemetry C++ dependencies and links them into a platform-specific shared library that Godot can load at runtime.
 
-1. Clone Godot engine
-2. Copy this module to `godot/modules/opentelemetry/`
-3. Build Godot with the module enabled
+#### Prerequisites
 
-The SCsub file will automatically build the OpenTelemetry C++ libraries during the Godot build process.
+- CMake 3.20 or later
+- C++17 compatible compiler (GCC 8+, Clang 7+, MSVC 2019+)
+- OpenSSL development headers
+- Platform-specific development tools (see godot-cpp toolchain documentation)
+
+#### Quick Build
+
+Basic build for Linux x86_64 (default):
+
+```bash
+cd /path/to/godot-open-telemetry
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+The built library will be in `build/bin/` with a name like `opentelemetry.linux.x86_64.so`.
+
+#### Platform-Specific Builds
+
+The CMakeLists.txt automatically detects the target platform and sets appropriate output names.
+
+For Linux:
+- x86_64: `opentelemetry.linux.x86_64.so`
+- ARM64: `opentelemetry.linux.arm64.so`
+
+For macOS (currently targets arm64):
+- `opentelemetry.macos.arm64.dylib`
+
+#### Advanced Configuration
+
+The build supports cross-compilation through standard CMake toolchain files:
+
+```bash
+cmake -S . -B build \
+      -DCMAKE_TOOLCHAIN_FILE=/path/to/toolchain.cmake \
+      -DPLATFORM=linuxbsd \
+      -DARCH=x86_64
+```
+
+#### Dependencies
+
+The OpenTelemetry libraries are built automatically from the included thirdparty sources. The following libraries are built and linked:
+
+- `opentelemetry_api`: Core trace API
+- `opentelemetry_sdk`: SDK implementation
+- `opentelemetry_exporter_ostream_span`: Console logging exporter
+- `opentelemetry_exporter_otlp_grpc`: OTLP gRPC exporter
+- `opentelemetry_exporter_otlp_http`: OTLP HTTP exporter
+- `opentelemetry_resources`: Resource detection
+
+#### Build Options
+
+- `WITH_OTLP`: Enable OTLP exporters (default: ON)
+- `WITH_OTLP_GRPC`: Enable gRPC OTLP exporter (default: ON)
+- `WITH_OTLP_HTTP`: Enable HTTP OTLP exporter (default: ON)
+- `BUILD_SHARED_LIBS`: Build shared libraries (forced to OFF for static linking)
+- `BUILD_TESTING`: Build unit tests (default: OFF)
+
+#### Dev Container Build
+
+When using the provided dev container, the build is simplified:
+
+```bash
+# In dev container, at project root
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+The dev container includes all necessary dependencies and build tools pre-installed.
