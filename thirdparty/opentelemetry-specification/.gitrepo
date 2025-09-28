@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/open-telemetry/opentelemetry-specification.git
+	branch = main
+	commit = 0e1094949a0cf57dd82c48fdb2b8e9e80cf3220e
+	parent = 7e521d5d4f5da4f6c3de300a7f4927209fad782e
+	method = merge
+	cmdver = 0.4.9

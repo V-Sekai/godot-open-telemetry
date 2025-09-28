@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/protocolbuffers/protobuf
+	branch = v3.21.6
+	commit = 24487dd1045c7f3d64a21f38a3f0c06cc4cf2edb
+	parent = 4c4d31f5e59b5d4d62af4c59f0f89cd6280cafd1
+	method = merge
+	cmdver = 0.4.9

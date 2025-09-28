@@ -10,8 +10,8 @@ build-cpp:
 # Build the OpenTelemetry GDExtension
 build:
     mkdir -p build
-    cmake -S . -B build -G Ninja -DPLATFORM=linuxbsd -DTARGET=editor -DARCH=x86_64 -DCMAKE_BUILD_TYPE=Release
-    cmake --build build --config Release
+    cmake -S . -B build -G Ninja -DPLATFORM=linuxbsd -DTARGET=editor -DARCH=x86_64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE
+    cmake --build build --config Release --verbose
 
 # Run the Godot editor (assumes GODOT_BINARY is set and the extension is loaded in a project)
 run:
