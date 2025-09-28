@@ -1,25 +1,135 @@
 # Godot Engine Open Telemetry
 
+This module provides OpenTelemetry tracing capabilities for the Godot game engine. It allows developers to instrument their Godot applications with distributed tracing, enabling better observability and debugging of game logic and performance.
+
+## API Reference
+
+### Initialization
+
+#### `init_tracer_provider(name: String, host: String, attributes: Dictionary) -> String`
+
+Initializes the OpenTelemetry tracer provider.
+
+**Parameters:**
+- `name`: A string identifier for this tracer provider
+- `host`: The OTLP exporter endpoint (e.g., "localhost:4317")
+- `attributes`: Resource attributes as a Dictionary (e.g., version info)
+
+**Returns:** Empty string on success, error message on failure
+
+### Span Management
+
+#### `start_span(name: String) -> String`
+
+Starts a new root span.
+
+**Parameters:**
+- `name`: Name of the span
+
+**Returns:** A unique span UUID string
+
+#### `start_span_with_parent(name: String, parent_span_uuid: String) -> String`
+
+Starts a new child span with the specified parent.
+
+**Parameters:**
+- `name`: Name of the span
+- `parent_span_uuid`: UUID of the parent span
+
+**Returns:** A unique span UUID string
+
+#### `end_span(span_uuid: String) -> void`
+
+Ends the specified span.
+
+**Parameters:**
+- `span_uuid`: UUID of the span to end
+
+#### `shutdown() -> String`
+
+Shuts down the OpenTelemetry tracer provider and exports any pending spans.
+
+**Returns:** Empty string on success, error message on failure
+
+### Span Operations
+
+#### `add_event(span_uuid: String, event_name: String) -> void`
+
+Adds a named event to the span.
+
+**Parameters:**
+- `span_uuid`: UUID of the span
+- `event_name`: Name of the event
+
+#### `set_attributes(span_uuid: String, attributes: Dictionary) -> void`
+
+Sets attributes on the span.
+
+**Parameters:**
+- `span_uuid`: UUID of the span
+- `attributes`: Dictionary of key-value attribute pairs
+
+#### `record_error(span_uuid: String, error: String) -> void`
+
+Records an error event on the span.
+
+**Parameters:**
+- `span_uuid`: UUID of the span
+- `error`: Error description or stack trace
+
+### Utilities
+
+#### `generate_uuid_v7() -> String`
+
+Generates a UUID v7 for use as custom span IDs.
+
+**Returns:** A UUID v7 string
+
+## Example Usage
+
 ```gdscript
 extends Node3D
 
 var otel: OpenTelemetry = Opentelemetry.new()
 
 func _ready() -> void:
+	# Initialize tracer provider with resource attributes
 	var error = otel.init_tracer_provider("godot", "localhost:4317", Engine.get_version_info())
-	print(error)
+	if error:
+		print("Failed to initialize OpenTelemetry: ", error)
 
 func _process(_delta) -> void:
-	var parent_span_id = otel.start_span("test-_ready")
-	var span_id = otel.start_span_with_parent("test-child", parent_span_id)
-	otel.add_event(span_id, "test-event")
-	otel.set_attributes(span_id, {"test-key": "test-value"})
-	otel.record_error(span_id, str(get_stack()))
-	otel.end_span(span_id)
-	otel.end_span(parent_span_id)
+	# Start a root span for game frame processing
+	var frame_span = otel.start_span("game-frame")
+
+	# Add custom attributes
+	otel.set_attributes(frame_span, {
+		"fps": Engine.get_frames_per_second(),
+		"delta": _delta,
+		"time": Time.get_time_string_from_system()
+	})
+
+	# Child span for physics update
+	var physics_span = otel.start_span_with_parent("physics-update", frame_span)
+	otel.add_event(physics_span, "physics-step-started")
+
+	# Simulate physics work
+	# ... physics calculations ...
+
+	otel.add_event(physics_span, "physics-step-completed")
+	otel.end_span(physics_span)
+
+	# Record an error if something went wrong
+	if _delta > 1.0:  # Very low FPS
+		otel.record_error(frame_span, "Very low frame rate detected: " + str(_delta))
+
+	otel.end_span(frame_span)
 
 func _exit_tree() -> void:
-	otel.shutdown()
+	# Properly shutdown to ensure all spans are exported
+	var error = otel.shutdown()
+	if error:
+		print("Failed to shutdown OpenTelemetry: ", error)
 ```
 
 ## Development
