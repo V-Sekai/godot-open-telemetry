@@ -377,7 +377,4 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
-*.generated.props
-
-libopentelemetry_c_interface.h
 

@@ -35,7 +35,7 @@
 #include "core/object/ref_counted.h"
 #include "core/variant/dictionary.h"
 
-#include "libopentelemetry_c_interface.h"
+#include "opentelemetry_wrapper.h"
 
 class OpenTelemetry : public RefCounted {
 	GDCLASS(OpenTelemetry, RefCounted);

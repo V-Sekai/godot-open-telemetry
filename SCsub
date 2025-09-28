@@ -7,39 +7,54 @@ Import("env")
 thirdparty_obj = []
 
 current_dir = os.getcwd()
-opentelemetry_folder = os.path.join(current_dir, "thirdparty/opentelemetry")
-os.chdir(opentelemetry_folder)
+opentelemetry_folder = os.path.join(current_dir, "thirdparty/opentelemetry-cpp")
+build_dir = os.path.join(opentelemetry_folder, "build")
 suffix = ".a"
 env_opentelemetry = env.Clone()
 
 if env.msvc:
     env_opentelemetry.Append(CPPDEFINES=["_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING"])
     suffix = ".lib"
-runtime = "opentelemetry_c_interface"
-subprocess.run(
-    [
-        "go",
-        "build",
-        "-o",
-        f"../../lib{runtime}{suffix}",
-        "-buildmode=c-archive",
-        ".",
-    ],
-    check=True,
-)
-# https://github.com/ashtonmeuser/godot-wasm/blob/master/SCsub#L44C58-L48C1
-os.chdir(current_dir)
 
-env["LIBRUNTIMESUFFIX"] = ".a"
+# Build opentelemetry-cpp if not already built
+if not os.path.exists(os.path.join(build_dir, f"libopentelemetry_api{suffix}")):
+    os.makedirs(build_dir, exist_ok=True)
+    os.chdir(build_dir)
+    cmake_cmd = [
+        "cmake",
+        "..",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DBUILD_TESTING=OFF",
+        "-DWITH_OTLP=ON",
+        "-DWITH_OTLP_GRPC=ON",
+        "-DCMAKE_BUILD_TYPE=Release",
+    ]
+    subprocess.run(cmake_cmd, check=True)
+    subprocess.run(["cmake", "--build", ".", "--config", "Release"], check=True)
+    os.chdir(current_dir)
 
-runtime_lib = env.File(
-    "{prefix}{runtime}{suffix}".format(
-        runtime=f"{runtime}",
-        prefix=env["LIBPREFIX"],
-        suffix=env.get("LIBRUNTIMESUFFIX", env["LIBSUFFIX"]),
-    )
-)
-env.Append(LIBS=[runtime_lib])
+# Link the libraries
+libs_to_link = [
+    "opentelemetry_api",
+    "opentelemetry_sdk",
+    "opentelemetry_exporter_otlp_grpc",
+    "opentelemetry_proto",
+    "opentelemetry_resources",
+    "opentelemetry_common",
+    "opentelemetry_version",
+]
+
+for lib in libs_to_link:
+    lib_path = os.path.join(build_dir, f"lib{lib}{suffix}")
+    if os.path.exists(lib_path):
+        env.Append(LIBS=[env.File(lib_path)])
+
+# Add include paths
+env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "api/include")])
+env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "sdk/include")])
+env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "exporters/otlp/include")])
+env.Append(CPPPATH=[os.path.join(opentelemetry_folder, "third_party/nlohmann-json/include")])
+
 if env["platform"] == "macos" or env["platform"] == "linuxbsd":
     env.Append(LIBS=["resolv"])
 
