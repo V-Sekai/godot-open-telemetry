@@ -1,5 +1,7 @@
 # Godot Engine Open Telemetry
 
+**In research and development. Do not use.**
+
 This module provides OpenTelemetry tracing capabilities for the Godot game engine. It allows developers to instrument their Godot applications with distributed tracing, enabling better observability and debugging of game logic and performance.
 
 ## API Reference
