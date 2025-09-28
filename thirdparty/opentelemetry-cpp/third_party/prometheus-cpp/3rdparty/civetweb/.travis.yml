@@ -1,0 +1,145 @@
+
+##############################################################################
+# Project specific settings
+##############################################################################
+
+language: c
+
+cache:
+  directories:
+  - $HOME/third-party
+
+before_install:
+  - cmake --version
+
+install:
+
+before_script:
+  # Check some settings of the build server (operating system, IPv6 availability, directory)
+  - uname -a
+  - ifconfig
+  - pwd
+  - ls -la
+  # Generate the build scripts with CMake
+  - mkdir output
+  - openssl version
+  - gcc --version
+  - cmake --version
+  - gcc unittest/cgi_test.c -o output/cgi_test.cgi
+  - cd output
+  - echo cmake
+    -G "Unix Makefiles"
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+    -DBUILD_SHARED_LIBS=${BUILD_SHARED}
+    "-DCIVETWEB_THIRD_PARTY_DIR=${HOME}/third-party"
+    -DCIVETWEB_ENABLE_THIRD_PARTY_OUTPUT=YES
+    -DCIVETWEB_ENABLE_SSL=${ENABLE_SSL}
+    -DCIVETWEB_DISABLE_CGI=${NO_CGI}
+    -DCIVETWEB_SERVE_NO_FILES=${NO_FILES}
+    -DCIVETWEB_ENABLE_SSL_DYNAMIC_LOADING=${ENABLE_SSL_DYNAMIC_LOADING}
+    -DCIVETWEB_SSL_OPENSSL_API_1_0=${OPENSSL_1_0}
+    -DCIVETWEB_SSL_OPENSSL_API_1_1=${OPENSSL_1_1}
+    -DCIVETWEB_SSL_OPENSSL_API_3_0=${OPENSSL_3_0}
+    -DCIVETWEB_ENABLE_WEBSOCKETS=${ENABLE_WEBSOCKETS}
+    -DCIVETWEB_ENABLE_CXX=${ENABLE_CXX}
+    -DCIVETWEB_ENABLE_SERVER_STATS=${ENABLE_SERVER_STATS}
+    -DCIVETWEB_ENABLE_LUA=${ENABLE_LUA}
+    -DCIVETWEB_ENABLE_LUA_SHARED=${ENABLE_LUA_SHARED}
+    -DCIVETWEB_ENABLE_DUKTAPE=${ENABLE_DUKTAPE}
+    -DCIVETWEB_DISABLE_CACHING=${NO_CACHING}
+    -DCIVETWEB_C_STANDARD=${C_STANDARD}
+    -DCIVETWEB_CXX_STANDARD=${CXX_STANDARD}
+    -DCIVETWEB_ALLOW_WARNINGS=${ALLOW_WARNINGS}
+    -DCIVETWEB_ENABLE_IPV6=${ENABLE_IPV6}
+    ${ADDITIONAL_CMAKE_ARGS}
+    ..
+  - cmake
+    -G "Unix Makefiles"
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+    -DBUILD_SHARED_LIBS=${BUILD_SHARED}
+    "-DCIVETWEB_THIRD_PARTY_DIR=${HOME}/third-party"
+    -DCIVETWEB_ENABLE_THIRD_PARTY_OUTPUT=YES
+    -DCIVETWEB_ENABLE_SSL=${ENABLE_SSL}
+    -DCIVETWEB_DISABLE_CGI=${NO_CGI}
+    -DCIVETWEB_SERVE_NO_FILES=${NO_FILES}
+    -DCIVETWEB_ENABLE_SSL_DYNAMIC_LOADING=${ENABLE_SSL_DYNAMIC_LOADING}
+    -DCIVETWEB_SSL_OPENSSL_API_1_0=${OPENSSL_1_0}
+    -DCIVETWEB_SSL_OPENSSL_API_1_1=${OPENSSL_1_1}
+    -DCIVETWEB_SSL_OPENSSL_API_3_0=${OPENSSL_3_0}
+    -DCIVETWEB_ENABLE_WEBSOCKETS=${ENABLE_WEBSOCKETS}
+    -DCIVETWEB_ENABLE_CXX=${ENABLE_CXX}
+    -DCIVETWEB_ENABLE_SERVER_STATS=${ENABLE_SERVER_STATS}
+    -DCIVETWEB_ENABLE_LUA=${ENABLE_LUA}
+    -DCIVETWEB_ENABLE_LUA_SHARED=${ENABLE_LUA_SHARED}
+    -DCIVETWEB_ENABLE_DUKTAPE=${ENABLE_DUKTAPE}
+    -DCIVETWEB_DISABLE_CACHING=${NO_CACHING}
+    -DCIVETWEB_C_STANDARD=${C_STANDARD}
+    -DCIVETWEB_CXX_STANDARD=${CXX_STANDARD}
+    -DCIVETWEB_ALLOW_WARNINGS=${ALLOW_WARNINGS}
+    -DCIVETWEB_ENABLE_IPV6=${ENABLE_IPV6}
+    ${ADDITIONAL_CMAKE_ARGS}
+    ..
+  - ls -la
+  - ulimit -c unlimited -S
+
+after_failure:
+  - COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+  - if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" example -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
+
+
+script:
+  - if [ "${RUN_UNITTEST}" == "1" ]; then
+      CTEST_OUTPUT_ON_FAILURE=1  CK_FORK=yes  make all test;
+    fi
+  - pwd
+  - ls -la unittest
+  - echo "Show all test logs:"
+  - if [ "${RUN_UNITTEST}" == "1" ]; then
+      for f in unittest/test-*.log; do printf "\n$f:\n"; cat $f; done;
+      for f in unittest/test-*.xml; do printf "\n$f:\n"; cat $f; done;
+    fi
+  - echo "Build and test script DONE"
+
+after_success:
+
+
+#########################################################################################
+#########################################################################################
+#####   START OF BUILD MATRIX   #########################################################
+#########################################################################################
+#########################################################################################
+
+matrix:
+  fast_finish: true
+  include:
+#########################################################################################
+#####   FREEBSD BUILD   ###########=#####################################################
+#########################################################################################
+
+  -
+    os: freebsd
+    sudo: required
+    compiler: clang
+    env:
+      idx=20
+      N=Clang-FREEBSD-Complete-NoLua-Release
+      BUILD_TYPE=Release
+      ENABLE_SSL_DYNAMIC_LOADING=YES
+      OPENSSL_1_0=NO
+      OPENSSL_1_1=YES
+      ENABLE_CXX=NO
+      ENABLE_LUA_SHARED=NO
+      C_STANDARD=auto
+      CXX_STANDARD=auto
+      BUILD_SHARED=NO
+      NO_FILES=NO
+      ENABLE_SSL=YES
+      NO_CGI=NO
+      ENABLE_IPV6=YES
+      ENABLE_WEBSOCKETS=YES
+      ENABLE_SERVER_STATS=YES
+      ENABLE_LUA=NO
+      ENABLE_DUKTAPE=NO
+      NO_CACHING=NO
+      ALLOW_WARNINGS=YES
+      RUN_UNITTEST=1
