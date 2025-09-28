@@ -30,16 +30,15 @@ else
     rsync -av --exclude='.git' --exclude='thirdparty/opentelemetry-cpp/build' . "$GODOT_MODULES_DIR/$MODULE_NAME/"
 fi
 
-# Build Godot with the module (disabled)
-# echo "Building Godot with OpenTelemetry module..."
-# cd /home/vscode/godot
-#
-# if [ ! -f "bin/godot.linuxbsd.editor.x86_64" ]; then
-#     scons platform=linuxbsd target=editor -j$(nproc) module_opentelemetry_enabled=yes
-# else
-#     echo "Godot already built, skipping build"
-# fi
-echo "Skipping Godot build in dev container as requested"
+# Build Godot with the module
+echo "Building Godot with OpenTelemetry module..."
+cd /home/vscode/godot
+
+if [ ! -f "bin/godot.linuxbsd.editor.x86_64" ]; then
+    scons platform=linuxbsd target=editor -j$(nproc) module_opentelemetry_enabled=yes
+else
+    echo "Godot already built, skipping build"
+fi
 
 echo "Development environment setup complete!"
 echo "Godot binary: /home/vscode/godot/bin/godot.linuxbsd.editor.x86_64"
