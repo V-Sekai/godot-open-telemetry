@@ -18,11 +18,6 @@ path = third_party/googletest
 url = https://github.com/google/googletest
 branch = main
 
-[submodule "third_party/benchmark"]
-path = third_party/benchmark
-url = https://github.com/google/benchmark
-branch = main
-
 [submodule "third_party/opentelemetry-proto"]
 path = third_party/opentelemetry-proto
 url = https://github.com/open-telemetry/opentelemetry-proto
