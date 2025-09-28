@@ -15,7 +15,8 @@
                 "ms-vscode.cpptools",
                 "ms-vscode.cpptools-extension-pack",
                 "geequlim.godot-tools",
-                "ms-python.python"
+                "ms-python.python",
+                "saoudrizwan.claude-dev"
             ],
             "settings": {
                 "cmake.configureOnOpen": true,

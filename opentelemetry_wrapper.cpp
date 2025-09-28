@@ -17,7 +17,7 @@
 
 // Managed spans
 static std::map<std::string, opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span>> spans;
-static opentelemetry::nostd::shared_ptr<opentelemetry::sdk::trace::TracerProvider> tracer_provider;
+static opentelemetry::nostd::shared_ptr<opentelemetry::trace::TracerProvider> tracer_provider;
 static opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer> tracer;
 
 opentelemetry::sdk::common::AttributeMap parse_attributes(const std::string& json_str) {
@@ -61,9 +61,10 @@ char* InitTracerProvider(const char* name, const char* host, const char* json_at
         auto processor = std::make_unique<opentelemetry::sdk::trace::SimpleSpanProcessor>(std::move(exporter));
 
         // Create provider
-        tracer_provider = opentelemetry::nostd::shared_ptr<opentelemetry::sdk::trace::TracerProvider>(
+        auto sdk_provider = opentelemetry::nostd::shared_ptr<opentelemetry::sdk::trace::TracerProvider>(
             new opentelemetry::sdk::trace::TracerProvider(std::move(processor), resource)
         );
+        tracer_provider = std::move(sdk_provider);
 
         // Set global provider
         opentelemetry::trace::Provider::SetTracerProvider(tracer_provider);
@@ -111,9 +112,21 @@ void AddEvent(const char* span_uuid, const char* event_name) {
 void SetAttributes(const char* span_uuid, const char* json_attributes) {
     auto it = spans.find(span_uuid);
     if (it != spans.end()) {
-        auto attributes = parse_attributes(json_attributes);
-        for (auto& attr : attributes) {
-            it->second->SetAttribute(attr.first, attr.second);
+        try {
+            nlohmann::json j = nlohmann::json::parse(json_attributes);
+            for (auto& [key, value] : j.items()) {
+                if (value.is_string()) {
+                    it->second->SetAttribute(key, value.get<std::string>());
+                } else if (value.is_number_integer()) {
+                    it->second->SetAttribute(key, value.get<int64_t>());
+                } else if (value.is_number_float()) {
+                    it->second->SetAttribute(key, value.get<double>());
+                } else if (value.is_boolean()) {
+                    it->second->SetAttribute(key, value.get<bool>());
+                }
+            }
+        } catch (...) {
+            // Ignore parse errors
         }
     }
 }
@@ -135,11 +148,8 @@ void EndSpan(const char* span_uuid) {
 }
 
 char* Shutdown() {
-    if (tracer_provider) {
-        tracer_provider->Shutdown(std::chrono::microseconds(5000));
-        tracer_provider.reset();
-        tracer.reset();
-        spans.clear();
-    }
+    tracer_provider = nullptr;
+    tracer = nullptr;
+    spans.clear();
     return strdup("OK");
 }
