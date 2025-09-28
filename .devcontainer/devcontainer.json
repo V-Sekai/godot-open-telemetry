@@ -13,11 +13,21 @@
             "extensions": [
                 "ms-vscode.cmake-tools",
                 "ms-vscode.cpptools",
-                "ms-vscode.cpptools-extension-pack"
-            ]
+                "ms-vscode.cpptools-extension-pack",
+                "geequlim.godot-tools",
+                "ms-python.python"
+            ],
+            "settings": {
+                "cmake.configureOnOpen": true,
+                "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+            }
         }
     },
     "mounts": [
         "source=${localWorkspaceFolder}/.git,target=/workspaces/${localWorkspaceFolderBasename}/.git,type=bind,consistency=cached"
-    ]
+    ],
+    "remoteEnv": {
+        "GODOT_PATH": "/home/vscode/godot",
+        "GODOT_BINARY": "/home/vscode/godot/bin/godot.linuxbsd.editor.x86_64"
+    }
 }

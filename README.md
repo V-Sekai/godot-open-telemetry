@@ -28,16 +28,29 @@ This project uses OpenTelemetry C++ for high-performance tracing. The thirdparty
 
 ### Dev Container
 
-A dev container is provided for consistent development environment:
+A dev container is provided for complete development environment with Godot 4.5:
 
 1. Open in VS Code
 2. When prompted, click "Reopen in Container" or use Command Palette: `Dev Containers: Reopen in Container`
-3. The container will automatically build the OpenTelemetry C++ libraries on first setup
+3. The container will automatically:
+   - Build the OpenTelemetry C++ libraries
+   - Clone and build Godot 4.5 with the module enabled
+   - Set up the complete development environment
 
 The dev container includes:
 - CMake and build tools
 - OpenTelemetry dependencies (gRPC, protobuf)
-- VS Code extensions for C++ development
+- Godot 4.5 with the module integrated
+- VS Code extensions for C++, Godot, and Python development
+
+After setup, you can:
+- Build the module: `cd /home/vscode/godot && scons platform=linuxbsd target=editor -j$(nproc) module_opentelemetry_enabled=yes`
+- Run Godot: `/home/vscode/godot/bin/godot.linuxbsd.editor.x86_64`
+- Test the module in a Godot project
+
+Environment variables available:
+- `GODOT_PATH`: Path to Godot source (`/home/vscode/godot`)
+- `GODOT_BINARY`: Path to built Godot binary
 
 ### Building
 
