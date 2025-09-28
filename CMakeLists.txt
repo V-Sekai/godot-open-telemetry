@@ -9,6 +9,10 @@ set(GODOT_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/godot-cpp")
 set(GODOT_CPP_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/godot-cpp")
 add_subdirectory("${GODOT_CPP_DIR}" "${GODOT_CPP_BUILD_DIR}" EXCLUDE_FROM_ALL)
 
+# Abseil setup (vendored)
+set(ABSL_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/abseil_vendor")
+add_subdirectory(${ABSL_CPP_DIR} EXCLUDE_FROM_ALL)
+
 # OpenTelemetry setup
 set(OPENTELEMETRY_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/opentelemetry-cpp")
 set(OPENTELEMETRY_CPP_BUILD_DIR "${CMAKE_BINARY_DIR}/opentelemetry-cpp")

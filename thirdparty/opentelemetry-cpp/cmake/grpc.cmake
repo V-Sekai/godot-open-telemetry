@@ -27,11 +27,9 @@ if(NOT gRPC_FOUND)
       GIT_TAG "${grpc_GIT_TAG}"
       GIT_SUBMODULES
           "third_party/re2"
-          "third_party/abseil-cpp"
           "third_party/protobuf"
           "third_party/cares/cares"
           "third_party/boringssl-with-bazel"
-      PATCH_COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/patch_abseil.py <SOURCE_DIR>/third_party/abseil-cpp/absl/copts/copts.py
       )
   set(gRPC_PROVIDER "fetch_repository")
 
@@ -50,7 +48,7 @@ if(NOT gRPC_FOUND)
   set(RE2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
   set(gRPC_PROTOBUF_PROVIDER "module" CACHE STRING "" FORCE)
   set(gRPC_PROTOBUF_PACKAGE_TYPE "CONFIG" CACHE STRING "" FORCE)
-  set(gRPC_ABSL_PROVIDER "module" CACHE STRING "" FORCE)
+  set(gRPC_ABSL_PROVIDER "vpkg" CACHE STRING "" FORCE)
   set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
 
   # Allow gRPC and its submodules to work with older CMake versions
