@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/opentracing/opentracing-cpp.git
+	branch = master
+	commit = 6db1a50770503ebd81bdd842d2c5c070ebdea664
+	parent = 9bb412f800087e485e262dac523a66edadd1c244
+	method = merge
+	cmdver = 0.4.9
