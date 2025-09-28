@@ -1,8 +1,0 @@
-# Copyright The OpenTelemetry Authors
-# SPDX-License-Identifier: Apache-2.0
-
-file_format: "1.0"
-
-propagator:
-  composite:
-    - tracecontext:
