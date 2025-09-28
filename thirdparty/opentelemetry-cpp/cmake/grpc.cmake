@@ -31,6 +31,7 @@ if(NOT gRPC_FOUND)
           "third_party/protobuf"
           "third_party/cares/cares"
           "third_party/boringssl-with-bazel"
+      PATCH_COMMAND git apply ${CMAKE_CURRENT_SOURCE_DIR}/abseil-arm64-fix.patch --directory=<SOURCE_DIR>/third_party/abseil-cpp --whitespace=fix --ignore-space-change --ignore-whitespace
       )
   set(gRPC_PROVIDER "fetch_repository")
 
