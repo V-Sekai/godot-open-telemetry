@@ -21,3 +21,30 @@ func _process(_delta) -> void:
 func _exit_tree() -> void:
 	otel.shutdown()
 ```
+
+## Development
+
+This project uses OpenTelemetry C++ for high-performance tracing. The thirdparty OpenTelemetry libraries are built automatically when compiling the Godot module.
+
+### Dev Container
+
+A dev container is provided for consistent development environment:
+
+1. Open in VS Code
+2. When prompted, click "Reopen in Container" or use Command Palette: `Dev Containers: Reopen in Container`
+3. The container will automatically build the OpenTelemetry C++ libraries on first setup
+
+The dev container includes:
+- CMake and build tools
+- OpenTelemetry dependencies (gRPC, protobuf)
+- VS Code extensions for C++ development
+
+### Building
+
+To build Godot with this module:
+
+1. Clone Godot engine
+2. Copy this module to `godot/modules/opentelemetry/`
+3. Build Godot with the module enabled
+
+The SCsub file will automatically build the OpenTelemetry C++ libraries during the Godot build process.
