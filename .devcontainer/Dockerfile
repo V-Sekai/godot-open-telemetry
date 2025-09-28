@@ -35,5 +35,12 @@ RUN apt-get update && apt-get install -y nlohmann-json3-dev
 USER vscode
 RUN git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot.git /home/vscode/godot
 
+# Install git-subrepo
+RUN git clone https://github.com/ingydotnet/git-subrepo.git ~/git-subrepo && \
+    cd ~/git-subrepo && \
+    make install && \
+    cd ~ && \
+    rm -rf ~/git-subrepo
+
 # Set up Godot build environment
 WORKDIR /home/vscode/godot
