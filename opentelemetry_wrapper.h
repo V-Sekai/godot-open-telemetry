@@ -8,8 +8,8 @@ extern "C" {
 #endif
 
 char* InitTracerProvider(const char* name, const char* host, const char* json_attributes);
-char* StartSpan(const char* name);
-char* StartSpanWithParent(const char* name, const char* parent_span_uuid);
+char* StartSpanWithId(const char* name, const char* span_id);
+char* StartSpanWithParentWithId(const char* name, const char* parent_span_uuid, const char* span_id);
 void AddEvent(const char* span_uuid, const char* event_name);
 void SetAttributes(const char* span_uuid, const char* json_attributes);
 void RecordError(const char* span_uuid, const char* error);

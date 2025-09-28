@@ -34,6 +34,7 @@
 #include "core/io/json.h"
 #include "core/object/ref_counted.h"
 #include "core/variant/dictionary.h"
+#include <godot_cpp/classes/crypto.hpp>
 
 #include "opentelemetry_wrapper.h"
 
@@ -47,6 +48,7 @@ public:
 	String init_tracer_provider(String p_name, String p_host, Dictionary p_attributes);
 	String start_span(String p_name);
 	String start_span_with_parent(String p_name, String p_parent_span_uuid);
+	String generate_uuid_v7();
 	void add_event(String p_span_uuid, String p_event_name);
 	void set_attributes(String p_span_uuid, Dictionary p_attributes);
 	void record_error(String p_span_uuid, String p_error);

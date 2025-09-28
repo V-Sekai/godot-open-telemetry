@@ -54,18 +54,65 @@ String OpenTelemetry::init_tracer_provider(String p_name, String p_host, Diction
 }
 
 String OpenTelemetry::start_span(String p_name) {
-	CharString c_span_name = p_name.utf8();
-	char *cstr_span_name = c_span_name.ptrw();
-	char *result = StartSpan(cstr_span_name);
-	return String(result);
+	String span_id = generate_uuid_v7();
+	return start_span_with_id(p_name, span_id);
 }
 
 String OpenTelemetry::start_span_with_parent(String p_name, String p_parent_span_uuid) {
-	CharString c_with_parent_name = p_name.utf8();
-	char *cstr_with_parent_name = c_with_parent_name.ptrw();
+	String span_id = generate_uuid_v7();
+	return start_span_with_parent_id(p_name, p_parent_span_uuid, span_id);
+}
+
+String OpenTelemetry::generate_uuid_v7() {
+	Ref<Crypto> crypto = memnew(Crypto);
+	PackedByteArray random_bytes = crypto->generate_random_bytes(8); // Generate 64 random bits
+
+	// Combine random bytes into uint64_t
+	uint64_t random_full = 0;
+	for (int i = 0; i < 8; ++i) {
+		random_full |= ((uint64_t)(random_bytes[i] & 0xFF)) << (i * 8);
+	}
+
+	// Extract the random components
+	uint16_t rand_a = random_full & 0xFFF; // Lower 12 bits
+	uint64_t rand_b = (random_full >> 12) & 0xFFFFFFFFFFFFULL; // Next 48 bits
+
+	// Get current timestamp in milliseconds
+	auto now = std::chrono::system_clock::now();
+	uint64_t unix_ts_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+
+	// Build UUID v7 components
+	uint32_t time_high = unix_ts_ms >> 16;
+	uint16_t time_mid = unix_ts_ms & 0xFFFF;
+	uint16_t time_low_ver = ((unix_ts_ms & 0xFFF) << 4) | 0x7; // Set version to 7
+	uint16_t clock_seq = (2 << 14) | rand_a; // Set variant to RFC 4122 (2)
+	uint64_t node = rand_b;
+
+	// Format as 36-character UUID string
+	char buffer[37];
+	snprintf(buffer, sizeof(buffer), "%08x-%04x-%04x-%04x-%012llx",
+			 time_high, time_mid, time_low_ver, clock_seq, node);
+
+	return String(buffer);
+}
+
+String OpenTelemetry::start_span_with_id(String p_name, String p_span_id) {
+	CharString c_name = p_name.utf8();
+	char* cstr_name = c_name.ptrw();
+	CharString c_span_id = p_span_id.utf8();
+	char* cstr_span_id = c_span_id.ptrw();
+	char* result = StartSpanWithId(cstr_name, cstr_span_id);
+	return String(result);
+}
+
+String OpenTelemetry::start_span_with_parent_id(String p_name, String p_parent_span_uuid, String p_span_id) {
+	CharString c_name = p_name.utf8();
+	char* cstr_name = c_name.ptrw();
 	CharString c_parent_id = p_parent_span_uuid.utf8();
-	char *cstr_parent_id = c_parent_id.ptrw();
-	char *result = StartSpanWithParent(cstr_with_parent_name, cstr_parent_id);
+	char* cstr_parent_id = c_parent_id.ptrw();
+	CharString c_span_id = p_span_id.utf8();
+	char* cstr_span_id = c_span_id.ptrw();
+	char* result = StartSpanWithParentWithId(cstr_name, cstr_parent_id, cstr_span_id);
 	return String(result);
 }
 

@@ -14,55 +14,11 @@
 #include <memory>
 #include <string>
 #include <chrono>
-#include <random>
-#include <sstream>
-#include <iomanip>
 
-// UUID v7 compliant span ID generation
+// Managed spans
 static std::map<std::string, opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span>> spans;
 static opentelemetry::nostd::shared_ptr<opentelemetry::sdk::trace::TracerProvider> tracer_provider;
 static opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer> tracer;
-
-// Generate UUID v7 compliant ID
-std::string generate_uuid_v7() {
-    // Get Unix timestamp in milliseconds (48 bits used)
-    auto now = std::chrono::system_clock::now();
-    uint64_t unix_ts_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-
-    // Random generators
-    static std::random_device rd;
-    static std::mt19937_64 gen(rd());
-    static std::uniform_int_distribution<uint16_t> dis12(0, 0xFFF); // 12 bits
-    static std::uniform_int_distribution<uint64_t> dis48(0, 0xFFFFFFFFFFFFULL); // 48 bits
-
-    // rand_a: 12 bits
-    uint16_t rand_a = dis12(gen);
-
-    // rand_b: lowest 48 bits of 62 bits (we use 48 for node)
-    uint64_t rand_b = dis48(gen);
-
-    // Build UUID components
-    uint32_t time_high = unix_ts_ms >> 16;  // First 32 bits of timestamp
-    uint16_t time_mid = unix_ts_ms & 0xFFFF;  // Next 16 bits
-    uint16_t time_low_ver = ((unix_ts_ms & 0xFFF) << 4) | 0x7;  // Last 12 bits << 4 | version (4 bits = 0111)
-    uint16_t clock_seq = (2 << 14) | rand_a;  // Var (2 bits = 10) << 14 | rand_a (12 bits)
-    uint64_t node = rand_b;  // 48 bits
-
-    // Format as UUID string
-    std::stringstream ss;
-    ss << std::hex << std::setfill('0');
-    ss << std::setw(8) << time_high << '-';
-    ss << std::setw(4) << time_mid << '-';
-    ss << std::setw(4) << time_low_ver << '-';
-    ss << std::setw(4) << clock_seq << '-';
-    ss << std::setw(12) << node;
-
-    return ss.str();
-}
-
-std::string generate_span_id() {
-    return generate_uuid_v7();
-}
 
 opentelemetry::sdk::common::AttributeMap parse_attributes(const std::string& json_str) {
     opentelemetry::sdk::common::AttributeMap attributes;
@@ -121,16 +77,16 @@ char* InitTracerProvider(const char* name, const char* host, const char* json_at
     }
 }
 
-char* StartSpan(const char* name) {
+char* StartSpanWithId(const char* name, const char* span_id) {
     if (!tracer) return strdup("Tracer not initialized");
 
     auto span = tracer->StartSpan(name);
-    std::string span_id = generate_span_id();
-    spans[span_id] = span;
-    return strdup(span_id.c_str());
+    std::string span_id_str(span_id);
+    spans[span_id_str] = span;
+    return strdup(span_id);
 }
 
-char* StartSpanWithParent(const char* name, const char* parent_span_uuid) {
+char* StartSpanWithParentWithId(const char* name, const char* parent_span_uuid, const char* span_id) {
     if (!tracer) return strdup("Tracer not initialized");
 
     auto it = spans.find(parent_span_uuid);
@@ -140,9 +96,9 @@ char* StartSpanWithParent(const char* name, const char* parent_span_uuid) {
     options.parent = it->second->GetContext();
 
     auto span = tracer->StartSpan(name, options);
-    std::string span_id = generate_span_id();
-    spans[span_id] = span;
-    return strdup(span_id.c_str());
+    std::string span_id_str(span_id);
+    spans[span_id_str] = span;
+    return strdup(span_id);
 }
 
 void AddEvent(const char* span_uuid, const char* event_name) {
