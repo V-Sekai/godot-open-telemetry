@@ -36,5 +36,3 @@ RUN git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot.git /h
 
 # Set up Godot build environment
 WORKDIR /home/vscode/godot
-RUN python3 -m pip install --user scons
-ENV PATH="/home/vscode/.local/bin:${PATH}"
